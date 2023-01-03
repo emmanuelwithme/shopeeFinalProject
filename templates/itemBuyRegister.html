@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block tittle %}
+<title>itemBuy</title>
+{% endblock %}
+
+{% block content %}
+<div>
+    商品搶購
+</div>
+<div>
+    <h2>請輸入要搶購的商品資訊</h2>
+    <hr>
+    <form action="" method="" class="container">
+        <h3 class="mt-4 mb-4">登入</h3>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="account" class="mb-1">帳號(購物網站):</label>
+                <input type="text" id="account" name="account" class="form-control mt-1 mb-3" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="password" class="mb-1">密碼(購物網站):</label>
+                <input type="password" id="password" name="password" class="form-control mt-1 mb-3" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="loginURL" class="mb-1">登入網址(購物網站):</label>
+                <input type="text" id="loginURL" name="loginURL" class="form-control mt-1 mb-3"
+                    value="https://shopee.tw/buyer/login" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="loginAccountLocation" class="mb-1">登入網站帳號欄位位置Xpath(購物網站):</label>
+                <input type="text" id="loginAccountLocation" name="loginAccountLocation" class="form-control mt-1 mb-3"
+                    required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="loginPasswordLocation" class="mb-1">登入網站密碼欄位位置Xpath(購物網站):</label>
+                <input type="text" id="loginPasswordLocation" name="loginPasswordLocation"
+                    class="form-control mt-1 mb-3" required>
+            </div>
+            <div class="form-group col-md-6">
+                <div class="form-check form-switch mb-3 mt-3">
+                    <label class="form-check-label" for="flexSwitchCheckChecked">直接按Enter登入網站</label>
+                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="loginSubmitLocation" class="mb-1">登入網站提交按鈕位置Xpath(購物網站):</label>
+                <input type="text" id="loginSubmitLocation" name="loginSubmitLocation" class="form-control mt-1 mb-3"
+                    disabled>
+            </div>
+        </div>
+        <hr>
+        <h3 class="mt-4 mb-4">商品</h3>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="shopid" class="mb-1">商家ID:</label>
+                <input type="text" id="shopid" name="shopid" value="{{shopid}}" class="form-control mt-1 mb-3" disabled>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="itemid" class="mb-1">商品ID:</label>
+                <input type="text" id="itemid" name="itemid" value="{{itemid}}" class="form-control mt-1 mb-3" disabled>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="itemURL" class="mb-1">商品網址(可改成你要搶的商品網址):</label>
+                <input type="text" id="itemURL" name="itemURL" value="https://shopee.tw/product/{{shopid}}/{{itemid}}"
+                    class="form-control mt-1 mb-3" required>
+            </div>
+        </div>
+        <hr>
+        <h3 class="mt-4 mb-4">搶購</h3>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="buyTime" class="mb-1">搶購時間:</label>
+                <input type="datetime-local" id="buyTime" name="buyTime" class="form-control mt-1 mb-3" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="itemPriceLocation" class="mb-1">商品價格Xpath(商品價格更動時，觸發條件):</label>
+                <input type="text" id="itemPriceLocation" name="itemPriceLocation" class="form-control mt-1 mb-3" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="input-type">選擇「按鈕」 OR 「輸入」動作:</label>
+                <select class="form-control" id="input-type">
+                    <option value="isClick">按鈕</option>
+                    <option value="isSendKey">輸入</option>
+                </select>
+            </div>
+            <div id="input-div" class="col-md-6"></div>
+            <button id="add-confirm-button" class="btn btn-primary mt-3" type="button">增加步驟</button>
+            <button id="add-remove-button" class="btn btn-danger mt-3" type="button">移除步驟</button>
+            <div id="input-values" class="col-md-6"></div>
+        </div>
+        <input type="submit" value="送出" class="btn btn-primary mt-4 mb-4">
+    </form>
+
+    <script type='text/javascript'>
+        // SCRIPT_ROOT 是路徑
+        const SCRIPT_ROOT = {{ request.script_root | tojson | safe }};
+        $(document).ready(function () {
+            $('#flexSwitchCheckChecked').change(function () {
+                if ($(this).is(':checked')) {
+                    // Switch is checked
+                    $('#loginSubmitLocation').val(''); // Clear the value
+                    $('#loginSubmitLocation').prop('disabled', true); // Disable the input
+                } else {
+                    // Switch is not checked
+                    $('#loginSubmitLocation').prop('disabled', false); // Enable the input
+                }
+            });
+
+            const inputTypeSelect = document.getElementById('input-type');
+            // assuming this is the <div> where you want to add the input elements
+            const inputDiv = document.getElementById('input-div');
+            $('#input-div').addClass('mt-3');
+
+            inputTypeSelect.addEventListener('change', () => {
+                inputDiv.innerHTML = ''; // clear the contents of the input div
+                if (inputTypeSelect.value === 'isClick') {
+                    const label = document.createElement('label');
+                    label.htmlFor = 'elementPosition';
+                    label.textContent = '按鈕位置(Xpath):';
+                    inputDiv.appendChild(label);
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'elementPosition';
+                    input.name = 'elementPosition';
+                    input.classList.add('form-control', 'mt-1', 'mb-3');
+                    inputDiv.appendChild(input);
+                } else if (inputTypeSelect.value === 'isSendKey') {
+                    const label1 = document.createElement('label');
+                    label1.htmlFor = 'elementPosition';
+                    label1.textContent = '輸入欄位置(Xpath):';
+                    inputDiv.appendChild(label1);
+
+                    const input1 = document.createElement('input');
+                    input1.type = 'text';
+                    input1.id = 'elementPosition';
+                    input1.name = 'elementPosition';
+                    input1.classList.add('form-control', 'mt-1', 'mb-3');
+                    inputDiv.appendChild(input1);
+
+                    const label2 = document.createElement('label');
+                    label2.htmlFor = 'key';
+                    label2.textContent = '輸入字串:';
+                    inputDiv.appendChild(label2);
+
+                    const input2 = document.createElement('input');
+                    input2.type = 'text';
+                    input2.id = 'key';
+                    input2.name = 'key';
+                    input2.classList.add('form-control', 'mt-1', 'mb-3');
+                    inputDiv.appendChild(input2);
+                }
+            });
+            // Select the <option value="isClick">isClick</option> option
+            inputTypeSelect.value = 'isClick';
+
+            // Trigger the change event
+            const eventChange = new Event('change');
+            inputTypeSelect.dispatchEvent(eventChange);
+
+
+
+            const inputValues = [];
+
+            document.getElementById('add-confirm-button').addEventListener('click', () => {
+                console.log(inputValues);
+
+                const isClick = inputTypeSelect.value === 'isClick';
+                const elementPosition = document.getElementById('elementPosition').value;
+                let key;
+                if (isClick) {
+                    key = null;
+                } else {
+                    key = document.getElementById('key').value;
+                }
+
+                // Create a new object and push it to the inputValues array
+                inputValues.push({
+                    isClick: isClick,
+                    elementPosition: elementPosition,
+                    key: key
+                });
+
+                // Append the object to the input-values div
+                const div = document.createElement('div');
+                div.innerText = JSON.stringify(inputValues[inputValues.length - 1]);
+                document.getElementById('input-values').appendChild(div);
+            });
+
+            document.getElementById('add-remove-button').addEventListener('click', () => {
+                console.log(inputValues);
+                // Remove the last element from the inputValues array
+                inputValues.pop();
+
+                // Remove the last child of the input-values div
+                document.getElementById('input-values').lastChild.remove();
+            });
+
+
+            var checkbox = document.getElementById('flexSwitchCheckChecked');
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked) {
+                    checkbox.value = 'on';
+                } else {
+                    checkbox.value = 'off';
+                }
+            });
+
+
+            $('form').submit(function (event) {
+                event.preventDefault(); // prevent the form from being submitted
+
+                var form_data = new FormData();
+                // 登入商城網站
+                form_data.append('account', $("#account").val());
+                form_data.append('password', $("#password").val());
+                form_data.append('loginURL', $("#loginURL").val());
+                form_data.append('loginAccountLocation', $("#loginAccountLocation").val());
+                form_data.append('loginPasswordLocation', $("#loginPasswordLocation").val());
+                form_data.append('flexSwitchCheckChecked', $("#flexSwitchCheckChecked").val());
+                form_data.append('loginSubmitLocation', $("#loginSubmitLocation").val());
+                
+                // 商品
+                form_data.append('itemURL', $("#itemURL").val());
+
+                // 搶購
+                form_data.append('buyTime', $("#buyTime").val());
+                form_data.append('itemPriceLocation', $("#itemPriceLocation").val());
+                form_data.append('inputValues', JSON.stringify(inputValues));
+
+                console.log(form_data);
+
+                // submit the form data to the Flask back-end using the AJAX function
+                $.ajax({
+                    type: 'POST', // use the POST method
+                    url: SCRIPT_ROOT + "/ajax" + "/submit_item_buy_register_form", // the URL to send the request to
+                    data: form_data, // the form data to send
+                    dataType: "json",
+                    contentType: false, // specify that the data is JSON
+                    processData: false, // do not transform the data into a query string
+                    success: function (response) {
+                        // do something with the response from the back-end
+                        $.each(response, function (key, value) {
+                            console.log(key, value);
+                        });
+                    }
+                });
+            });
+
+
+        });
+    </script>
+</div>
+{% endblock %}

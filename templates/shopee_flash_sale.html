@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block tittle %}
+<title>shopee_flash_sale</title>
+{% endblock %}
+
+{% block content %}
+<div>
+    蝦皮限時特賣價格查詢
+</div>
+<div>
+    <h2>請選擇商品類型</h2>
+    <form action="" method="get">
+        第一層選單
+        <select id="promotionid" name="promotionid">
+            <option value="">請選擇</option>
+        </select>
+        <br>
+        第二層選單(先隱藏，選完第一層後再出現)
+        <select id="categoryid" name="categoryid" style="display:none;">
+            <option value="">請選擇</option>
+        </select>
+    </form>
+    <div id="card-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-4"></div>
+
+    <script type='text/javascript'>
+        // $SCRIPT_ROOT 是路徑
+        const SCRIPT_ROOT = {{ request.script_root | tojson | safe }};
+        $(document).ready(function () {
+            let sessions_list;
+            $.ajax({
+                type: "GET",
+                url: SCRIPT_ROOT + "/ajax" + "/get_promotionid",
+                dataType: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    $.each(data, function (key, value) {
+                        sessions_list = value;
+                        for (let i = 0; i < sessions_list.length; i++) {
+                            let element = sessions_list[i];
+                            $('#promotionid').append('<option value="' + element["promotionid"] + '">' + element["name"] + '</option>');
+                        }
+                    });
+
+                    $("#promotionid").change(function () {
+                        console.log(sessions_list);
+                        $("#categoryid").empty(); //清空上次的值
+                        $("#categoryid").css("display", "inline"); //顯現
+                        // eturn the first element from the sessions_list array that has a promotionid property equal to 125133052383237
+                        const targetSession = sessions_list.find(session => session.promotionid == $("#promotionid").val());
+                        const targetCategories = targetSession.categories;
+
+                        targetCategories.forEach(category => {
+                            const html = `<option value="${category.catid}">${category.catname}</option>`;
+                            $('#categoryid').append(html);
+                        });
+
+                        $("#categoryid").change(function () {
+                            $('#card-container').empty();
+
+                            var form_data = new FormData();
+                            form_data.append('promotionid', $("#promotionid").val());
+                            form_data.append('categoryid', $("#categoryid").val()); //取得縣市
+
+                            console.log("promotionid=" + $("#promotionid").val() + "type=" + typeof ($("#promotionid").val()));
+                            console.log("categoryid=" + $("#categoryid").val() + "type=" + typeof ($("#categoryid").val()));
+
+                            $.ajax({
+                                type: "POST",
+                                url: SCRIPT_ROOT + "/ajax" + "/get_all_items_detail",
+                                data: form_data,
+                                dataType: "json",
+                                contentType: false,
+                                processData: false,
+                                // dataType是從server回傳的response_data type (dataType: "text json")(text to json)
+                                success: function (data) {
+                                    const filePrefix = "https://cf.shopee.tw/file/";
+                                    const fileSuffix = "_tn";
+                                    
+                                    // 商品網址前綴
+                                    const itemShopeePrefix = "https://shopee.tw/product/";
+
+                                    console.log("get_all_items_detail \n", data);
+                                    // Iterate through the item list
+                                    $.each(data, function (key, value) {
+                                        // Create the elements for the card
+                                        const promoImages = `<img src="${filePrefix}${value.promo_images[0]}${fileSuffix}" class="card-img-top img-fluid">`;
+                                        let promoOverlayImage = "";
+                                        if (value.promo_overlay_image != null) {
+                                            promoOverlayImage = `<img src="${filePrefix}${value.promo_overlay_image}${fileSuffix}" class="card-img-overlay img-fluid">`;
+                                        }
+                                        const promoName = `<h5 class="card-title text-orange">${value.promo_name}</h5>`;
+                                        const priceBeforeDiscount = `<del>原價: ${Math.floor(value.price_before_discount / 100000)}</del>`;
+                                        
+                                        // Calculate the discounted price
+                                        const discountedPrice = value.price_before_discount * (100 - value.raw_discount) / 100;
+
+                                        const price = `<span class="text-orange">售價: ${Math.floor(discountedPrice / 100000)}</span>`;
+                                        const discount = `<span class="badge text-bg-warning">${value.discount}折</span>`;
+                                        const itemid = `<span>商品ID: ${value.itemid}</span>`;
+                                        const shopid = `<span>商家ID: ${value.shopid}</span>`;
+                                        // ex: https://shopee.tw/product/1982863/3218043488
+                                        const itemShopeeLink = `<a href="${itemShopeePrefix}${value.shopid}/${value.itemid}" class="btn btn-warning">商品連結</a>`;
+                                        const itemBuyRegisterLink = `<a href="${SCRIPT_ROOT}/itemBuyRegister/${value.shopid}/${value.itemid}" class="btn btn-danger">搶購連結</a>`;
+
+                                        // Combine the elements into the card content
+                                        const cardContent = `
+                                            ${promoImages}
+                                            ${promoOverlayImage}
+                                            <div class="card-body">
+                                            ${promoName}
+                                            <p class="card-text">${priceBeforeDiscount} ${price} ${discount}</p>
+                                            <p class="card-text">${itemid}</p>
+                                            <p class="card-text">${shopid}</p> 
+                                            <p class="card-text">${itemShopeeLink} ${itemBuyRegisterLink}</p>
+                                            </div>
+                                        `;
+
+                                        // Create a card element and append the card content
+                                        const card = `<div class="card">${cardContent}</div>`;
+
+                                        // Create a column element and append the card
+                                        const col = $('<div class="col my-3"></div>');
+                                        col.append(card);
+
+                                        // Append the row to the container element
+                                        $('#card-container').append(col);
+                                    });
+                                },
+                                error: function (request, error) {
+                                    alert("request: ", request, "error: ", error, '\n', "request failed!");
+                                }
+                            });
+                        });
+                    });
+                },
+                error: function (request, error) {
+                    alert("request: " + request + "error: " + error + '\n' + "request failed!");
+                }
+            });
+
+
+        });
+    </script>
+</div>
+{% endblock %}

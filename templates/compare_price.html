@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block tittle %} {% endblock %} {% block content %}
+<div class="container">
+    <h2>請輸入想搜尋的商品</h2>
+    <form action="/compare_price" method="post">
+        <div><input class="sendkey_word" name="sendkey_word"></div>
+
+        <div>
+            <select id="sort_by" name="sort_by">
+        <option value = "" selected>請選擇排序方式(默認:推薦排序)</option>
+        <option value = "" >推薦排序</option>
+        <option value = "lp" >價格低到高</option>
+        <option value = "hp" >價格高到低</option>
+        </select>
+        </div>
+
+
+        <br>請輸入想搜尋的價格區間(選填)
+        <div>
+            <input class="low" name="low" placeholder="請輸入低價格">
+            <input class="high" name="high" placeholder="請輸入高價格">
+        </div>
+
+        <div><input class="btn_sendkey" type="submit" name="send" value="送出"></div>
+    </form>
+
+</div>
+{% endblock %}

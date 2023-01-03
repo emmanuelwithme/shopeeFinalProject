@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block tittle %}
+<title>蝦皮搶購站</title>
+{% endblock %}
+
+{% block content %}
+<div class="text-bg-primary fs-1 text-center">歡迎來到蝦皮搶購站</div>
+<div class="container">
+    <div class="row justify-content-around text-center">
+        <a href="./shopee_flash_sale" role="button" class="btn btn-outline-success col-4 p-3 fs-2">1. 看蝦皮限時特賣價格</a>
+        <a href="./compare_price" role="button" class="btn btn-outline-success col-4 p-3 fs-2">2. 比價功能</a>
+    </div>
+    <table class="table table-striped table-bordered table-hover hover-primary">
+        <thead>
+            <tr>
+                <th scope="col">項目</th>
+                <th scope="col">完成人</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1. 取得蝦皮限時特賣價格</th>
+                <td>陳遠謀</td>
+            </tr>
+            <tr>
+                <th scope="row">2. 通用型搶購程式</th>
+                <td>陳遠謀</td>
+            </tr>
+            <tr>
+                <th scope="row">3. 比價功能(爬蟲)</th>
+                <td>童筱真</td>
+            </tr>
+            <tr>
+                <th scope="row">4. 會員系統(串接MySQL DB)</th>
+                <td>李揚</td>
+            </tr>
+            <tr>
+                <th scope="row">5. 學習參考拓元購票搶票程式</th>
+                <td>李旻勳</td>
+            </tr>
+            <tr>
+                <th scope="row">合併修改大家的程式碼</th>
+                <td>陳遠謀</td>
+            </tr>
+            <tr>
+                <th scope="row">製作網頁導覽</th>
+                <td>陳遠謀</td>
+            </tr>
+        </tbody>
+    </table>
+    <a class="btn btn-outline-success" href="https://github.com/emmanuelwithme/shopeeFinalProject">see code in github</a>
+</div>
+{% endblock %}
