@@ -1,14 +1,11 @@
-# AJAX in Flask
+# 蝦皮搶購站
 
-## 參考
-* https://www.dotblogs.com.tw/YiruAtStudio/2020/11/23/144747
-* https://github.com/wilsonsujames/flask_jquery_ajax/tree/master/flask_tutorial
-* https://ithelp.ithome.com.tw/articles/10256593
-* https://towardsdatascience.com/using-python-flask-and-ajax-to-pass-information-between-the-client-and-server-90670c64d688
-* https://stackoverflow.com/questions/70917397/how-can-i-create-a-request-and-response-with-jquery-ajax-and-flask
-* https://flask.palletsprojects.com/en/2.0.x/patterns/jquery/
-* https://api.jquery.com/jquery.ajax/#jQuery-ajax-url-settings
-* https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html
+## 功能
+1. 蝦皮限時特賣預先取得未顯示價格
+2. 通用型搶購程式(不只蝦皮可以搶)
+3. 比價功能(爬蟲)
+4. 會員系統
+
 
 ## Procfile
 * web gunicorn app:app
