@@ -27,13 +27,13 @@
  3. 然後在該database執行以下SQL創建users table
  
 
-        create  table  IF  NOT  EXISTS users (
-	        id int  not  null auto_increment,
-	        name  varchar(20) not  null,
-	        email varchar(20) not  null,
-	        password  char(80) not  null,
-	        primary  key (id)
-        );
+    create  table  IF  NOT  EXISTS users (
+        id int  not  null auto_increment,
+        name  varchar(20) not  null,
+        email varchar(20) not  null,
+        password  char(80) not  null,
+        primary  key (id)
+    );
         
 ## Procfile
 
