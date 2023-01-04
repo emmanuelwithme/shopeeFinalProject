@@ -8,6 +8,16 @@
 {% block content %}
 <div class="text-bg-primary fs-1 text-center">歡迎來到蝦皮搶購站</div>
 <div class="container">
+    {% if session['name'] %}
+    <div class="alert alert-success" role="alert">
+        歡迎 <span>{{ session['name'] }}</span> 的登入
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        請先登入謝謝！！
+    </div>
+    {% endif %}
+    
     <div class="row justify-content-around text-center">
         <a href="./shopee_flash_sale" role="button" class="btn btn-outline-success col-4 p-3 fs-2">1. 看蝦皮限時特賣價格</a>
         <a href="./compare_price" role="button" class="btn btn-outline-success col-4 p-3 fs-2">2. 比價功能</a>
@@ -50,6 +60,7 @@
             </tr>
         </tbody>
     </table>
-    <a class="btn btn-outline-success" href="https://github.com/emmanuelwithme/shopeeFinalProject">see code in github</a>
+    <a class="btn btn-outline-success" href="https://github.com/emmanuelwithme/shopeeFinalProject">see code in
+        github</a>
 </div>
 {% endblock %}

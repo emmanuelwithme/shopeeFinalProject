@@ -30,6 +30,21 @@
                     <li class="nav-item">
                         <a class="nav-link" href="./compare_price">比價功能</a>
                     </li>
+                    {% if session['name'] %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href=".">{{ session['name'] }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="./logout">登出</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="./login">登入</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="./register">註冊</a>
+                    </li>
+                    {% endif %}
                     <!-- <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">

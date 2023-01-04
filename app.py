@@ -4,11 +4,22 @@ import json
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
+import mysql.connector
+from mysql.connector import Error
+# hash密碼
+import bcrypt
 
 
 app = flask.Flask(__name__)
 app.register_blueprint(ajax_bp, url_prefix='/ajax')
 
+# 連接 MySQL/MariaDB 資料庫
+connection = mysql.connector.connect(
+    host='127.0.0.1',          # 主機名稱
+    database='shopeefinalproject', # 資料庫名稱
+    user='root',        # 帳號
+    password='root',	# 密碼
+	auth_plugin='mysql_native_password')  
 
 @app.route("/")
 def hello():
@@ -110,5 +121,78 @@ def getcompare_price():
 		return flask.render_template("show_compare_price.html",data=df_new,sort=sort,key=key,high=high,low=low)
 	return flask.render_template("compare_price.html")
 
+# 註冊頁面
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if flask.request.method == 'GET':
+        return flask.render_template("register.html")
+    
+    else:
+        name = flask.request.form['name']
+        email = flask.request.form['email']
+        password = flask.request.form['password'].encode('utf-8')
+        hash_password = bcrypt.hashpw(password, bcrypt.gensalt())
+        
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO users (name, email, password) VALUES (%s,%s,%s)",
+            (name, email, hash_password))
+        #sql = "INSERT INTO users (name, email, password) VALUES ({}, {}, {});"
+        #new_data = (name, email, hash_password)
+        #print(new_data)
+        
+        
+        #cursor.execute(sql, new_data)
+        connection.commit()
+        flask.session['name'] = flask.request.form['name']
+        flask.session['email'] = flask.request.form['email']
+
+        return flask.redirect(flask.url_for('hello'))
+        
+
+
+# 登入頁面
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    if flask.request.method == 'POST':
+        email = flask.request.form['email']
+        
+        password = flask.request.form['password'].encode('utf-8')
+
+        cursor = connection.cursor(buffered=True)
+        #cursor2 = mysql.connector.connect(buffered=True)
+
+        cursor.execute("SELECT name, email, password FROM users;")
+
+        # 列出查詢的資料
+        #for ( email, password) in cursor:
+            #print("email: %s, Password:%s" % (email,password))
+        cursor.execute("SELECT * FROM users WHERE email=%s", [email])
+        user = cursor.fetchone()
+        print(user[3].encode('utf-8'))
+        
+        cursor.close()
+        if user == None:
+            return "沒有這個帳號"
+        if len(user) != 0:
+            if bcrypt.hashpw(password, user[3].encode('utf-8'))  == user[3].encode('utf-8') :
+                flask.session['name'] = user[1]
+                flask.session['email'] = user[2]
+                return flask.render_template("home.html")
+            else:
+                return "您的密碼錯誤"
+    else:
+        return flask.render_template("login.html")
+        
+
+
+# 登出
+
+@app.route('/logout')
+def logout():
+    flask.session.clear()
+    return flask.render_template("home.html")
+
 if __name__ == "__main__":
-    app.run(debug=True)
+	app.secret_key = "This is a secret_key"
+	app.run(debug=True)
